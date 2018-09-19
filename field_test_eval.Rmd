@@ -1,0 +1,40 @@
+---
+title: "Field_test_eval"
+author: "Peter Paziczki"
+date: "September 19, 2018"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+rm(list=ls())
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, echo = FALSE)
+```
+
+```{r echo=FALSE}
+# Loading necessary libraries
+library(ggplot2)
+library(data.table)
+
+# Loading the data
+data_source <- fread(file = "field_test_db_2018_6_1-2018_9_19.csv" , stringsAsFactors = F )
+data <- data_source
+```
+
+```{r}
+basis_date <- Sys.Date()
+data <- data[Start > ]
+
+
+data[,.N, by = `Disengagement category`]
+```
+
+```{r}
+# Filtering
+Sys.time()
+Sys.Date()
+```
