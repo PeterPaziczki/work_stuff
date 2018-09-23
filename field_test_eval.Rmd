@@ -22,19 +22,56 @@ library(data.table)
 
 # Loading the data
 data_source <- fread(file = "field_test_db_2018_6_1-2018_9_19.csv" , stringsAsFactors = F )
+# Making a copy so the source cannot ne modified
 data <- data_source
+# Uninteded disengagements only
+unintended_disengs <- data[Intended == 'FALSE']
 ```
 
 ```{r}
-basis_date <- Sys.Date()
-data <- data[Start > ]
+# Some statistics
+#plot(density(data$Distance)) # calling a density function on bmi
+data[,.N, by = Intended]
+data[,.N, by = Location]
 
+data[,unique(Location)]
+data[,unique(`Disengagement category`)]
+data[,unique(`aiDrive version`)]
+```
 
-data[,.N, by = `Disengagement category`]
+```{r}
+# Having all the self driving sessions after the xth uninteded disengagement
+x = 50
+data_sessions <- data[Start >= data[Intended == 'FALSE', Start][x]]
+y <- nrow(data_sessions)
+
+# sum of kms driven globally
+data_sessions[,sum(Distance)]
+# sum of kms driven per location
+data_sessions[,sum(Distance), by = Location]
+
+# Avg kms driven per unintended diseng globally
+data_sessions[,sum(Distance)]/y
+
+# Avg kms driven per unintended diseng locally
+countries <- data_sessions[,list(self_driving_session = .N), by = Location]
+
+data_sessions[,sum(Distance), by = Location][,2]
+data_sessions[,sum(Distance), by = Location][,2]/data_sessions[,.N, by = Location][,2]
+```
+
+```{r}
+data[,.N, by = list(`Disengagement category`, Location)]
+#table(data$`Disengagement category`)
+data[Location == 'Hungary', .N, by = list(`Disengagement category`, Location)]
+ggplot(data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~Location)
+ggplot(data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~`aiDrive version`)
 ```
 
 ```{r}
 # Filtering
 Sys.time()
 Sys.Date()
+basis_date <- Sys.Date()
+#data <- data[Start > ]
 ```
