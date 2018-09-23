@@ -29,42 +29,53 @@ unintended_disengs <- my_data[Intended == 'FALSE']
 ```
 
 ```{r}
-# Some statistics
+# Some general statistics
 #plot(density(my_data$Distance)) # calling a density function on bmi
-my_data[,.N, by = Intended]
-my_data[,.N, by = Location]
 
-my_data[,unique(Location)]
-my_data[,unique(`Disengagement category`)]
-my_data[,unique(`aiDrive version`)]
+# All values in all columns
+for (column_name in colnames(my_data)){
+  print(my_data[,.N, by = column_name])
+}
 ```
 
 ```{r}
-# Having all the self driving sessions after the xth uninteded disengagement
+# Having all the self driving sessions after the xth uninteded disengagements globally
 x = 50
 data <- my_data[Start >= my_data[Intended == 'FALSE', Start][x]]
+data[Intended == 'FALSE',.N]
 y <- nrow(data)
 
-# sum of kms driven globally
-data[,sum(Distance)]
-# sum of kms driven per location
-data[,sum(Distance), by = Location]
+# Global stats
+stats <- data[,list(sum_kms_driven = sum(Distance), self_driving_sessions = nrow(data))]
+stats[, avg_kms_driven_per_u_disengs := sum_kms_driven/self_driving_sessions]
+stats
 
-# Avg kms driven per unintended diseng globally
-data[,sum(Distance)]/y
+# Breaking it down to local stats
+stats <- data[,list(self_driving_sessions = .N, sum_kms_driven = sum(Distance)), by = Location]
+stats[, avg_kms_driven_per_u_disengs := sum_kms_driven/self_driving_sessions]
+stats
 
-# Avg kms driven per unintended diseng locally
-countries <- data[,list(self_driving_session = .N, sum_kms_driven = sum(Distance)), by = Location]
-countries[, avg_kms_druven := sum_kms_driven/self_driving_session]
-countries
+# Having all the self driving sessions after the xth uninteded disengagements locally
+x = 50
+
+for (country in unique(my_data$Location)){
+  data <- my_data[Location == country]
+  data <- data[Start >= data[Intended == 'FALSE', Start][x]]
+  # Selfcheck
+  data[Intended == 'FALSE',.N]
+  stats <- data[,list(Location = country, self_driving_sessions = .N, sum_kms_driven = sum(Distance))]
+  stats[, avg_kms_driven_per_u_disengs := sum_kms_driven/self_driving_sessions]
+  print(stats)
+}
+
 ```
 
 ```{r}
 my_data[,.N, by = list(`Disengagement category`, Location)]
 #table(data$`Disengagement category`)
 my_data[Location == 'Hungary', .N, by = list(`Disengagement category`, Location)]
-ggplot(data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~Location)
-ggplot(data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~`aiDrive version`)
+ggplot(my_data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~Location)
+ggplot(my_data, aes(`Disengagement category`)) + geom_bar() + facet_wrap(~`aiDrive version`)
 ```
 
 ```{r}
