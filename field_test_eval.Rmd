@@ -58,6 +58,9 @@ stats
 # Having all the self driving sessions after the xth uninteded disengagements locally
 x = 50
 
+total <- data.table(matrix(nrow = 0, ncol = 3))
+total <- setNames(data.table(matrix(nrow = 0, ncol = 3)), c("Location", "self_driving_sessions", "sum_kms_driven"))
+
 for (country in unique(my_data$Location)){
   data <- my_data[Location == country]
   data <- data[Start >= data[Intended == 'FALSE', Start][x]]
@@ -65,6 +68,7 @@ for (country in unique(my_data$Location)){
   data[Intended == 'FALSE',.N]
   stats <- data[,list(Location = country, self_driving_sessions = .N, sum_kms_driven = sum(Distance))]
   stats[, avg_kms_driven_per_u_disengs := sum_kms_driven/self_driving_sessions]
+  total <- rbind(total,stats)
   print(stats)
 }
 
